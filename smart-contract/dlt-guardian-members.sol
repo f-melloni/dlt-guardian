@@ -16,7 +16,7 @@ contract DLT_guardian_membership is Ownable {
     address public walletAccount; // Account that receives ETH from membeship fees
     uint public membershipFee; // Required fee for new members
     address[] public memberAddresses; // Addresses of registered members, both active and inactive
-    mapping (address => Organisation) private members; // Complete data of registered members
+    mapping (address => Organisation) public members; // Complete data of registered members
     // TODO: add document timestamp
 
     constructor() public Ownable() {

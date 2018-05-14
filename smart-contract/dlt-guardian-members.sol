@@ -1,5 +1,4 @@
 pragma solidity 0.4.23;
-pragma experimental ABIEncoderV2; // Experimental ABI encoder, only used for easy access to public data for front end visualisation
 
 import "./Zeppelin/ownership/Ownable.sol";
 
@@ -53,8 +52,8 @@ contract DLT_guardian_membership is Ownable {
 
     // Methods that can be called by members
 
-    function member_changeOrgWebsite(string _newDescription) public onlyActiveMember {
-        members[msg.sender].description = _newDescription;
+    function member_changeOrgWebsite(string _newWebsite) public onlyActiveMember {
+        members[msg.sender].website = _newWebsite;
     }
 
     function member_changeOrgDescription(string _newDescription) public onlyActiveMember {
@@ -81,14 +80,5 @@ contract DLT_guardian_membership is Ownable {
             registered: true,
             active: true
         });
-    }
-
-    function public_getMemberCount() public view returns (uint) { // Used for front end visualisation
-        return memberAddresses.length;
-    }
-
-    function public_getMemberAtIndex(uint _index) public view returns(Organisation) { // Used for front end visualisation
-        require(_index < memberAddresses.length);
-        return members[memberAddresses[_index]];
     }
 }

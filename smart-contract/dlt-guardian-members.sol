@@ -26,7 +26,7 @@ contract DLT_guardian_membership is Ownable {
         _;
     }
 
-    event CreateOrganisation(address, Organisation);
+    event CreateOrganisation(address, string, string, string);
     event DeactivateOrganisation(address);
     event ReactivateOrganisation(address);
     event ChangeURL(address, string);
@@ -85,14 +85,13 @@ contract DLT_guardian_membership is Ownable {
 
         memberAddresses.push(msg.sender); // Add address to registered list
 
-        Organisation memory newOrganisation = Organisation({
+        members[msg.sender] = Organisation({
             name: _orgName,
             website: _orgWebsite,
             description: _orgDescription,
             registered: true,
             active: true
         });
-        members[msg.sender] = newOrganisation;
-        emit CreateOrganisation(msg.sender, newOrganisation);
+        emit CreateOrganisation(msg.sender, _orgName, _orgWebsite, _orgDescription);
     }
 }

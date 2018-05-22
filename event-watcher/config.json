@@ -1,15 +1,29 @@
 {
     "SmartContract": {
-        "Address": "0x52f4d5a7ac13cca456ea2048d4ca56002a3337b1",
+        "Address": {
+            "dev": "0x52f4d5a7ac13cca456ea2048d4ca56002a3337b1",
+            "prod": ""
+        },
         "ABI": [{ "constant": true, "inputs": [{ "name": "", "type": "address" }], "name": "members", "outputs": [{ "name": "name", "type": "string" }, { "name": "website", "type": "string" }, { "name": "description", "type": "string" }, { "name": "registered", "type": "bool" }, { "name": "active", "type": "bool" }], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": false, "inputs": [{ "name": "_memberAddress", "type": "address" }], "name": "admin_reactivateMemberAccount", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [], "name": "member_cancelMembership", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [{ "name": "_memberAddress", "type": "address" }], "name": "admin_deactivateMemberAccount", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [{ "name": "_orgName", "type": "string" }, { "name": "_orgWebsite", "type": "string" }, { "name": "_orgDescription", "type": "string" }], "name": "public_requestMembership", "outputs": [], "payable": true, "stateMutability": "payable", "type": "function" }, { "constant": false, "inputs": [{ "name": "_walletAccount", "type": "address" }], "name": "admin_setWalletAccount", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [{ "name": "_membershipFee", "type": "uint256" }], "name": "admin_setMembershipFee", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": true, "inputs": [], "name": "owner", "outputs": [{ "name": "", "type": "address" }], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": false, "inputs": [{ "name": "_newWebsite", "type": "string" }], "name": "member_changeOrgWebsite", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": true, "inputs": [], "name": "membershipFee", "outputs": [{ "name": "", "type": "uint256" }], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [{ "name": "", "type": "uint256" }], "name": "memberAddresses", "outputs": [{ "name": "", "type": "address" }], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": false, "inputs": [{ "name": "_newDescription", "type": "string" }], "name": "member_changeOrgDescription", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [], "name": "admin_sweepEth", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [{ "name": "newOwner", "type": "address" }], "name": "transferOwnership", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": true, "inputs": [], "name": "walletAccount", "outputs": [{ "name": "", "type": "address" }], "payable": false, "stateMutability": "view", "type": "function" }, { "inputs": [], "payable": false, "stateMutability": "nonpayable", "type": "constructor" }, { "anonymous": false, "inputs": [{ "indexed": false, "name": "", "type": "address" }, { "indexed": false, "name": "", "type": "string" }, { "indexed": false, "name": "", "type": "string" }, { "indexed": false, "name": "", "type": "string" }], "name": "CreateOrganisation", "type": "event" }, { "anonymous": false, "inputs": [{ "indexed": false, "name": "", "type": "address" }], "name": "DeactivateOrganisation", "type": "event" }, { "anonymous": false, "inputs": [{ "indexed": false, "name": "", "type": "address" }], "name": "ReactivateOrganisation", "type": "event" }, { "anonymous": false, "inputs": [{ "indexed": false, "name": "", "type": "address" }, { "indexed": false, "name": "", "type": "string" }], "name": "ChangeURL", "type": "event" }, { "anonymous": false, "inputs": [{ "indexed": false, "name": "", "type": "address" }, { "indexed": false, "name": "", "type": "string" }], "name": "ChangeDescription", "type": "event" }, { "anonymous": false, "inputs": [{ "indexed": true, "name": "previousOwner", "type": "address" }, { "indexed": true, "name": "newOwner", "type": "address" }], "name": "OwnershipTransferred", "type": "event" }]
     },
     "EthNode": {
-        "IP": "194.145.180.207",
-        "Port": "8052",
-        "RpcUser": "nakamotox",
-        "RpcPassword": "EN140W9/cNeUO7qL"
+        "dev": {
+            "IP": "194.145.180.207",
+            "Port": "8052",
+            "RpcUser": "nakamotox",
+            "RpcPassword": "EN140W9/cNeUO7qL"
+        },
+        "prod": {
+            "IP": "",
+            "Port": ""
+        }
     },
-    "DLTBackend": {
-        "Url": "http://localhost:58135/api"
+    "DLTFrontEnd": {
+        "dev": {
+            "Url": "http://localhost:58135/api"
+        },
+        "prod": {
+            "Url": ""
+        }
     }
 }

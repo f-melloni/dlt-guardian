@@ -22,10 +22,4 @@
     <Folder Include="wwwroot\fonts\" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Content Update="ABI.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
 </Project>

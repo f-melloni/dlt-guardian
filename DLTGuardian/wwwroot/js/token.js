@@ -347,7 +347,9 @@ var SMART_CONTRACT_ABI = [
 
 var SC = {
 
-    SC_ADDRESS: '0x52f4d5a7ac13cca456ea2048d4ca56002a3337b1',
+    SC_ADDRESS_DEV: '0x52f4d5a7ac13cca456ea2048d4ca56002a3337b1',
+    SC_ADDRESS_PROD: '',
+
     REQUEST_MEMBERSHIP_BASE_GAS: 100700,
     REQUEST_MEMBERSHIP_GAS_PER_CHAR: 900,
 
@@ -393,11 +395,26 @@ var SC = {
 
     memberListTable: $('#memberListTable'),
 
+    ownerActions: {
+        deactivate: {
+            title: 'Deactivate membership',
+            className: 'fa-times-circle text-danger',
+            forActive: true
+        },
+        reactivate: {
+            title: 'Reactivate membership',
+            className: 'fa-check text-success',
+            forActive: false
+        }
+    },
+
+    currentActionTarget: null,
+
     init: function () {
         web3 = new Web3(typeof web3 !== 'undefined' ? web3.currentProvider : new Web3.providers.HttpProvider('http://localhost:8545'));
 
         this.contract = web3.eth.contract(SMART_CONTRACT_ABI);
-        this.instance = this.contract.at(this.SC_ADDRESS);
+        this.instance = this.contract.at($('body').is('.dev') ? this.SC_ADDRESS_DEV : this.SC_ADDRESS_PROD);
 
         $(document)
             .on('keyup',    '#regForm input, #regForm textarea',    _(this._onRegFormKeyUp, this))
@@ -410,6 +427,7 @@ var SC = {
             .on('click',    '#btnSaveDescription',                  _(this._onChangeDescriptionFormSubmit, this))
             .on('click',    '#btnCancelMembership',                 _(this._onBtnCancelMembershipClick, this))
             .on('click',    '#btnNo',                               _(this._onBtnNoClick, this))
+            .on('click',    'a.actionIcon',                         _(this._onActionIconClick, this))
             .on('submit',   '#regForm',                             _(this._onRegFormSubmit, this))
             .on('submit',   '#formChangeWebsite',                   _(this._onChangeWebsiteFormSubmit, this))
             .on('submit',   '#formChangeDescription',               _(this._onChangeDescriptionFormSubmit, this))
@@ -428,7 +446,6 @@ var SC = {
 
         this.getAccount();
         this.getEntryFee();
-        this.getMembers();
 
         this.watchForAccountChange();
         this.subscribeEvents();
@@ -460,18 +477,18 @@ var SC = {
 
     watchForAccountChange: function () {
         var accountInterval = setInterval(_(function () {
-            if (web3.eth.accounts[0] !== this.defaultAddress) {
-                this.getAccount();   
+            if (this.defaultAddress && web3.eth.accounts[0] !== this.defaultAddress) {
+                this.getAccount();
             }
         }, this), 100);
     },
 
     subscribeEvents: function () {
-        this.instance.CreateOrganisation(function (e, r) {
-            console.log('event call!');
-            console.log(e);
-            console.log(r);
-        });
+        this.instance.CreateOrganisation(_(this._onCreateOrganisation, this));
+        this.instance.ChangeURL(_(this._onChangeURL, this));
+        this.instance.ChangeDescription(_(this._onChangeDescription, this));
+        this.instance.DeactivateOrganisation(_(this._onDeactivateOrganisation, this));
+        this.instance.ReactivateOrganisation(_(this._onReactivateOrganisation, this));
     },
 
     /*************************************************************/
@@ -495,6 +512,7 @@ var SC = {
         this.inputs.owner.newOwner.val(r);
         this.panels.owner.toggleClass('d-none', !this.isOwner);
         this.checkMember();
+        this.getMembers();
     },
 
     checkMember: function () {
@@ -502,14 +520,18 @@ var SC = {
     },
 
     setMember: function (e, r) {
-        this.panels.member.toggleClass('d-none', r[3] !== true || r[4] !== true);
-        this.panels.notMember.toggleClass('d-none', r[3] === true || this.isOwner);
-        this.panels.canceled.toggleClass('d-none', r[4] === true || r[3] === false || this.isOwner);
+        if (r != null) {
+            console.log(r);
 
-        if (r[3] === true && r[4] === true) {
-            $('#myOrgName').html(r[0]);
-            $('#myOrgWebsite').html(r[1]);
-            $('#myOrgDescription').html(r[2]);
+            this.panels.member.toggleClass('d-none', r[3] !== true || r[4] !== true);
+            this.panels.notMember.toggleClass('d-none', r[3] === true || this.isOwner);
+            this.panels.canceled.toggleClass('d-none', r[4] === true || r[3] === false || this.isOwner);
+
+            if (r[3] === true && r[4] === true) {
+                $('#myOrgName').html(r[0]);
+                $('#myOrgWebsite').html(r[1]);
+                $('#myOrgDescription').html(r[2]);
+            }
         }
     },
 
@@ -539,6 +561,22 @@ var SC = {
 
     changeOwner: function () {
 
+    },
+
+    deactivateMember: function (address) {
+        this.instance.admin_deactivateMemberAccount(
+            address,
+            { gase: 210000 },
+            _(this._onMemberDeactivated, this)
+        );  
+    },
+
+    reactivateMember: function (address) {
+        this.instance.admin_reactivateMemberAccount(
+            address,
+            { gas: 210000 },
+            _(this._onMemberReactivated, this)
+        );
     },
 
     watchSetEntryFeeTransaction: function (txHash) {
@@ -598,12 +636,53 @@ var SC = {
     /* MEMBER METHODS                                            */
     /*************************************************************/
     getMembers: function () {
-        this.instance.memberAddresses(5, _(this.setMemberList, this));
+        var self = this;
+        setTimeout(function () {
+            $.get('/api/Members', _(self.setMemberList, self));
+        }, 250);
     },
 
-    setMemberList: function (e, r) {
-        console.log(e);
-        console.log(r);
+    setMemberList: function (data) {
+        console.log(data);
+
+        var body = this.memberListTable.find('tbody');
+        if (this.isOwner) {
+            this.memberListTable.find('thead tr').append('<th width="34.4"></th><th width="80">Actions</th>');
+        }
+
+        body.html('');
+        for (var i = 0; i < data.length; i++) {
+            if (!data[i].isActive && !this.isOwner) {
+                continue;
+            }
+
+            var row = $('<tr><td></td><td></td></tr>');
+            row.find('td')
+                .eq(0).html(data[i].organizationName).end()
+                .eq(1).html(data[i].organizationWebsite);
+
+            if (this.isOwner) {
+                row.append('<td class="bg-' + (data[i].isActive ? 'success' : 'danger') + '"></td>');
+                row.append('<td class="text-center"></td>');
+
+                for (var k in this.ownerActions) {
+                    var action = this.ownerActions[k];
+                    var icon = $('<a href="#" class="fas actionIcon mx-2"></a>');
+
+                    if (data[i].isActive !== action.forActive) {
+                        icon.addClass('disabled').css('opacity', 0.2);
+                    }
+                    
+                    icon.addClass(action.className).attr({
+                        'title': action.title,
+                        'data-address': data[i].accountAddress,
+                        'data-action': k
+                    }).appendTo(row.find('td:last-child'));
+                }
+            }
+
+            body.append(row);
+        }
     },
 
     registerMember: function () {
@@ -639,95 +718,6 @@ var SC = {
             { gas: 30000 },
             _(this._onMembershipCanceled, this)
         );
-    },
-    
-    watchRegistrationTransaction: function (txHash) {
-        var hash = txHash;
-        var timer = setInterval(function () {
-            $('#regMessage').append('<i class="fas fa-spinner fa-spin float-right"></i>');
-
-            web3.eth.getTransactionReceipt(hash, function (e, r) {
-                if (r != null) {
-                    if (r['status'] == '0x1') {
-                        $('#regMessage').remove();
-                        SC.panels.notMember.addClass('d-none');
-                        SC.panels.member.removeClass('d-none');
-                    }
-                    else {
-                        $('#regMessage')
-                            .html('<i class="fas fa-exclamation-circle mr-1"></i> An unexpected error occured. Please try again later.')
-                            .removeClass('alert-success')
-                            .addClass('alert-danger');
-
-                        $('#regForm').removeClass('d-none');
-                    }
-
-                    clearTimeout(timer);
-                }
-                $('#regMessage .fa-spinner').remove();
-            });
-        }, 2000);
-    },
-
-    watchChangeWebsiteTransaction: function (txHash) {
-        var hash = txHash;
-        var timer = setInterval(function () {
-            web3.eth.getTransactionReceipt(hash, function (e, r) {
-                if (r != null) {
-                    $('#myOrgWebsite').removeClass('text-black-50');
-                    if (r['status'] == '0x1') {
-                        $('#myOrgWebsite').html(SC.inputs.changeWebsite.newWebsite.val());                        
-                    }
-                    else {
-                        SC.panels.member.find('.card-body').prepend(SC.makeMessage('danger', '', 'An unexpected error occured while changing Your organization website. Please try again later.', 'exclamation-circle', true));
-                    }
-
-                    clearTimeout(timer);
-                }
-            });
-        }, 2000);
-    },
-
-    watchChangeDescriptionTransaction: function (txHash) {
-        var hash = txHash;
-        var timer = setInterval(function () {
-            web3.eth.getTransactionReceipt(hash, function (e, r) {
-                if (r != null) {
-                    $('#myOrgDescription').removeClass('text-black-50');
-                    if (r['status'] == '0x1') {
-                        $('#myOrgDescription').html(SC.inputs.changeDescription.newDescription.val());
-                    }
-                    else {
-                        SC.panels.member.find('.card-body').prepend(SC.makeMessage('danger', '', 'An unexpected error occured while changing Your organization description. Please try again later.', 'exclamation-circle', true));
-                    }
-
-                    clearTimeout(timer);
-                }
-            });
-        }, 2000);
-    },
-
-    watchMembershipCancelTransaction: function (txHash) {
-        var hash = txHash;
-        var timer = setInterval(function () {
-            web3.eth.getTransactionReceipt(hash, function (e, r) {
-                if (r != null) {
-                    SC.panels.member.find('.alert').remove();
-                    SC.panels.member.find('card-body dl').removeClass('d-none');
-                    $('#btnCancelMembership').removeClass('d-none');
-
-                    if (r["status"] == '0x1') {
-                        SC.panels.member.addClass('d-none');
-                        SC.panels.canceled.removeClass('d-none');
-                    }
-                    else {
-                        SC.panels.member.find('.card-body').prepend(SC.makeMessage('danger', '', 'An unexpected error occured while canceling Your membership. Please try again later.', 'exclamation-circle', true));
-                    }
-                    
-                    clearTimeout(timer);
-                }
-            });
-        }, 2000);
     },
     
     validateRegForm: function () {
@@ -887,6 +877,20 @@ var SC = {
         this.modalConfirm.modal('hide');
     },
 
+    _onActionIconClick: function (event) {
+
+        var elm = $(event.target);
+        if (!elm.is('.disabled')) {
+            this.currentActionTarget = elm;
+            switch (elm.attr('data-action')) {
+                case 'deactivate': this.deactivateMember(elm.attr('data-address')); break;
+                case 'reactivate': this.reactivateMember(elm.attr('data-address')); break;
+            }
+        }
+
+        return false;
+    },
+
     // CALLBACK
     _onRegistrationComplete: function (e, r) {
         if (r != null) {
@@ -897,8 +901,6 @@ var SC = {
             $('#regForm')
                 .addClass('d-none')
                 .before(this.makeMessage('success', 'regMessage', 'Thank you for your registration. Please wait a while until transaction is confirmed.', 'check'));
-
-            this.watchRegistrationTransaction(r);
         }
     },
 
@@ -909,8 +911,6 @@ var SC = {
         else if (r) {
             this.panels.member.find('.card-body').prepend(this.makeMessage('success', '', 'Your organization website will be updated shortly', 'check', true));
             $('#myOrgWebsite').addClass('text-black-50');
-
-            this.watchChangeWebsiteTransaction(r);
             this.modalChangeWebsite.modal('hide');
         }
     },
@@ -922,8 +922,6 @@ var SC = {
         else if (r) {
             this.panels.member.find('.card-body').prepend(this.makeMessage('success', '', 'Your organization description will be updated shortly', 'check', true));
             $('#myOrgDescription').addClass('text-black-50');
-
-            this.watchChangeDescriptionTransaction(r);
             this.modalChangeDescription.modal('hide');
         }
     },
@@ -936,8 +934,6 @@ var SC = {
             this.panels.member.find('.card-body').prepend(this.makeMessage('success', '', 'Your membership was successfully canceled. Please wait a while until transaction is confirmed.', 'check'));
             this.panels.member.find('.card-body dl').addClass('d-none');
             $('#btnCancelMembership').addClass('d-none');
-
-            this.watchMembershipCancelTransaction(r);
         }
 
         $(document).off('click', '#btnYes');
@@ -957,6 +953,74 @@ var SC = {
 
             this.watchSetEntryFeeTransaction(r);
         }
+    },
+
+    _onMemberReactivated: function (e, r) {
+        var elm = this.currentActionTarget;
+        elm.addClass('disabled').css('opacity', 0.2);
+        elm.prev().removeClass('disabled').css('opacity', 1);
+        elm.parent().prev().removeClass('bg-danger').addClass('bg-success');
+    },
+
+    _onMemberDeactivated: function (e, r) {
+        var elm = this.currentActionTarget;
+        elm.addClass('disabled').css('opacity', 0.2);
+        elm.next().removeClass('disabled').css('opacity', 1);
+        elm.parent().prev().removeClass('bg-danger').addClass('bg-success');
+    },
+
+    /*************************************************************/
+    /* SMART CONTRACT EVENTS                                     */
+    /*************************************************************/
+    _onCreateOrganisation: function (e, r) {
+        if (r != null) {
+            $('#regMessage').remove();
+            SC.panels.notMember.addClass('d-none');
+            SC.panels.member.removeClass('d-none');
+            this.checkMember();
+        }
+    },
+
+    _onChangeURL: function (e, r) {
+        $('#myOrgWebsite').removeClass('text-black-50');
+        if (r != null) {
+            $('#myOrgWebsite').html(SC.inputs.changeWebsite.newWebsite.val());                
+        }
+        else {
+            SC.panels.member.find('.card-body').prepend(SC.makeMessage('danger', '', 'An unexpected error occured while changing Your organization website. Please try again later.', 'exclamation-circle', true));
+        }
+    },
+
+    _onChangeDescription: function (e, r) {
+        $('#myOrgDescription').removeClass('text-black-50');
+        if (r != null) {
+            $('#myOrgDescription').html(SC.inputs.changeDescription.newDescription.val());
+        }
+        else {
+            SC.panels.member.find('.card-body').prepend(SC.makeMessage('danger', '', 'An unexpected error occured while changing Your organization description. Please try again later.', 'exclamation-circle', true));
+        }
+    },
+
+    _onDeactivateOrganisation: function (e, r) {
+        if (r != null && r.args[""] == this.defaultAddress) {
+            SC.panels.member.find('.alert').remove();
+            SC.panels.member.find('card-body dl').removeClass('d-none');
+            $('#btnCancelMembership').removeClass('d-none');
+
+            SC.panels.member.addClass('d-none');
+            SC.panels.canceled.removeClass('d-none');
+        }
+        this.getMembers();
+    },
+
+    _onReactivateOrganisation: function (e, r) {
+        if (r != null && r.args[""] == this.defaultAddress) {
+            SC.panels.member.removeClass('d-none');
+            SC.panels.canceled.addClass('d-none');
+
+            this.checkMember();
+        }
+        this.getMembers();
     }
 };
 

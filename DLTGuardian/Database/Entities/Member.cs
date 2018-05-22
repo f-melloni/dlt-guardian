@@ -23,5 +23,7 @@ namespace DLTGuardian.Database.Entities
         public string OrganizationWebsite { get; set; }
 
         public string OrganizationDescription { get; set; }
+
+        public bool IsActive { get; set; }
     }
 }

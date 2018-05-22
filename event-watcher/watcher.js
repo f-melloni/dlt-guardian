@@ -1,7 +1,7 @@
 var Web3 = require('web3');
 var util = require('util');
+var request = require('request');
 var web3;
-var i = 5;
 
 var watcher = {
 
@@ -9,19 +9,27 @@ var watcher = {
     lastBlock: 'latest',
     firstBlock: 3280344,
 
+    config: null,
+    env: null,
+
     init: function() {
-        var config = require('./config.json');
-        var host = config.EthNode.IP + ':' + config.EthNode.Port;
-        var authUser = config.EthNode.RpcUser;
-        var authPass = config.EthNode.RpcPassword;
+        this.config = require('./config.json');
+
+        var env = process.env.ENVIRONMENT === 'production' ? 'prod' : 'dev';
+        this.env = env;
+
+        var host = this.config.EthNode[env].IP + ':' + this.config.EthNode[env].Port;
+        var authUser = this.config.EthNode[env].RpcUser;
+        var authPass = this.config.EthNode[env].RpcPassword;
 
         var providerUrl = util.format('ws://%s', host);
 
-        var provider = new Web3.providers.WebsocketProvider(providerUrl, {
+        var provider = new Web3.providers.WebsocketProvider(providerUrl, authUser && authPass ? {
             headers: {
                 authorization: 'Basic ' + Buffer.from(authUser + ':' + authPass).toString('base64')
             }
-        });
+        } : {});
+
         provider.on('notifcation', () => { console.log('ws notified'); });
         provider.on('connect', () => { console.log('ws connected'); });
         provider.on('error', (e) => { console.log('ws error ', e); });
@@ -30,7 +38,7 @@ var watcher = {
 
         web3 = new Web3(provider);
 
-        this.instance = new web3.eth.Contract(config.SmartContract.ABI, config.SmartContract.Address);
+        this.instance = new web3.eth.Contract(this.config.SmartContract.ABI, this.config.SmartContract.Address[env]);
 
         setInterval(function() {
             web3.eth.net.isListening(function(e, r) {});
@@ -43,13 +51,18 @@ var watcher = {
         this.instance.events.allEvents({ fromBlock: this.firstBlock }, this._onEvent.bind(this));
     },
 
+    sendToFrontend: function(event, data) {
+        var url = this.config.DLTFrontEnd[this.env].Url + '/' + event;
+
+        request.post({
+            url: url,
+            json: data
+        });
+    },
+
     // EVENTS
     _onEvent: function(e, r) {
         console.log('--- EVENT SEEN ---');
-        console.log('Error: ', e);
-        console.log('Block number: ', r.blockNumber);
-        console.log('Event name: ', r.event);
-        console.log('Event value: ', r.returnValues[1]);
 
         if (r) {
             switch (r.event) {
@@ -73,23 +86,48 @@ var watcher = {
     },
 
     _onCreateOrganisation: function(r) {
+        var data = {
+            'AccountAddress': r.returnValues[0],
+            'OrganizationName': r.returnValues[1],
+            'OrganizationWebsite': r.returnValues[2],
+            'OrganizationDescription': r.returnValues[3]
+        };
 
+        this.sendToFrontend(r.event, data);
     },
 
     _onDeactivateOrganisation: function(r) {
+        var data = {
+            'AccountAddress': r.returnValues[0]
+        };
 
+        this.sendToFrontend(r.event, data);
     },
 
     _onReactivateOrganisation: function(r) {
+        var data = {
+            'AccountAddress': r.returnValues[0]
+        };
 
+        this.sendToFrontend(r.event, data);
     },
 
     _onChangeURL: function(r) {
+        var data = {
+            'AccountAddress': r.returnValues[0],
+            'OrganizationWebsite': r.returnValues[1]
+        };
 
+        this.sendToFrontend(r.event, data);
     },
 
     _onChangeDescription: function(r) {
+        var data = {
+            'AccountAddress': r.returnValues[0],
+            'OrganizationDescription': r.returnValues[1]
+        };
 
+        this.sendToFrontend(r.event, data);
     }
 };
 

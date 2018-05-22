@@ -6,7 +6,7 @@
     <title>@ViewData["Title"] - DLTGuardian</title>
     <link rel="stylesheet" href="~/css/screen.css" asp-append-version="true" />
 </head>
-<body>
+<body class="@(ViewData.ContainsKey("EnvClass") ? (string)ViewData["EnvClass"] : "")">
     <main>
         <header>
             <div class="container">

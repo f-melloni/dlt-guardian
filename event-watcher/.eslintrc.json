@@ -1,0 +1,10 @@
+{
+    "extends": "standard",
+    "rules": {
+        "semi": [2, "always"],
+        "no-multiple-empty-lines": "off",
+        "eol-last": "off",
+        "indent": "off",
+        "space-before-function-paren": "off"
+    }
+}

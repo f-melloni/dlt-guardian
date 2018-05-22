@@ -1,0 +1,28 @@
+{
+  "name": "smartcontracteventwatcher",
+  "version": "0.0.1",
+  "author": "Martin Novák (novak@simplifate.com)",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www"
+  },
+  "dependencies": {
+    "debug": "^3.1.0",
+    "eslint": "^4.19.1",
+    "express": "^4.16.3",
+    "jade": "^1.11.0",
+    "npm": "^6.0.1",
+    "serve-favicon": "^2.5.0",
+    "web3": "^1.0.0-beta.34"
+  },
+  "main": "app.js",
+  "devDependencies": {
+    "eslint-config-standard": "^11.0.0",
+    "eslint-plugin-import": "^2.12.0",
+    "eslint-plugin-node": "^6.0.1",
+    "eslint-plugin-promise": "^3.7.0",
+    "eslint-plugin-standard": "^3.1.0"
+  },
+  "license": "ISC",
+  "description": ""
+}

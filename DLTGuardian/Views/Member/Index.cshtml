@@ -1,0 +1,201 @@
+﻿
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Member area</h2>
+
+<div class="card border-primary mb-5" id="memberListPanel">
+    <div class="card-header bg-primary">Members</div>
+    <div class="card-body">
+        <table class="table table-striped table-sm" id="memberListTable">
+            <colgroup>
+                <col />
+                <col />
+                <col width="80" />
+            </colgroup>
+            <thead>
+                <tr>
+                    <th>Organization</th>
+                    <th>Website</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card d-none border-primary" id="ownerPanel">
+    <div class="card-header bg-primary">
+        Owner panel
+    </div>
+    <div class="card-body">
+        <form action="" id="formSetFee">
+            <div class="form-group row">
+                <label for="newEntryFee" class="col-form-label col-sm-3">Entry fee:</label>
+                <div class="col">
+                    <div class="input-group">
+                        <input type="text" name="newEntryFee" id="newEntryFee" class="form-control text-right">
+                        <div class="input-group-append"><span class="input-group-text">ETH</span></div>
+                    </div>
+                </div>
+                <div class="col-auto">
+                    <button type="submit" id="btnSetEntryFee" class="btn btn-primary"><i class="fas fa-save"></i> Change</button>
+                </div>
+            </div>
+        </form>
+        <form action="" id="formSetOwner">
+            <div class="form-group row">
+                <label for="newOwnerWallet" class="col-form-label col-sm-3">Owner wallet</label>
+                <div class="col">
+                    <input type="text" name="newOwnerWallet" id="newOwnerWallet" class="form-control">
+                </div>    
+                <div class="col-auto">
+                    <button type="submit" id="btnChangeOwner" class="btn btn-danger"><i class="fas fa-save"></i> Change</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card d-none border-primary" id="memberPanel">
+    <div class="card-header bg-primary text-white">
+        My organization
+        <button type="button" id="btnCancelMembership" class="btn btn-danger float-right">Cancel membership</button>
+    </div>
+    <div class="card-body">
+        <dl>
+            <dt>Organization name:</dt>
+            <dd id="myOrgName"></dd>
+            <dt><a href="#" title="edit website" id="btnEditWebsite" class="far fa-edit"></a> Organization website:</dt>
+            <dd id="myOrgWebsite"></dd>
+            <dt><a href="#" title="edit description" id="btnEditDescription" class="far fa-edit"></a> Organization description</dt>
+            <dd id="myOrgDescription"></dd>
+        </dl>
+    </div>
+</div>
+
+<div class="card d-none border-primary" id="canceledMembershipPanel">
+    <div class="card-header bg-primary text-white">
+        Membership is canceled
+    </div>
+    <div class="card-body">
+        <p>
+            Your membership is canceled. If want to be member again, please choose other account or contact us.
+        </p>
+    </div>
+</div>
+
+<div class="card d-none border-primary" id="notMemberPanel">
+    <div class="card-header bg-primary text-white">
+        Member registration
+    </div>
+    <div class="card-body">
+        <form action="" id="regForm">
+            <div class="form-group row">
+                <label for="entryFee" class="col-sm-3 col-form-label">Entry fee:</label>
+                <div class="col-sm-9">
+                    <input type="text" readonly="readonly" class="form-control-plaintext" name="entryFee" id="entryFee" value="" />
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="orgName" class="col-sm-3 col-form-label">Organization name:</label>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" name="orgName" id="orgName" value="" />
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="orgWebsite" class="col-sm-3 col-form-label">Organization website:</label>
+                <div class="col-sm-9">
+                    <input type="url" class="form-control" name="orgWebsite" id="orgWebsite" value="" />
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="orgDescription" class="col-sm-3 col-form-label">Organization description:</label>
+                <div class="col-sm-9">
+                    <textarea name="orgDescription" class="form-control" rows="5" id="orgDescription"></textarea>
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-sm-12">
+                    <button type="submit" class="btn btn-primary float-right" id="regFormSubmit"><i class="fas fa-check"></i> Become a member</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal" tabindex="-1" role="dialog" id="modalChangeWebsite">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Change organization website</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form action="" id="formChangeWebsite">
+                    <div class="form-group">
+                        <label for="newWebSite">New website:</label>
+                        <input type="url" class="form-control" value="" id="newWebsite" name="newWebsite" />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default mr-auto" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="btnSaveWebsite">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" tabindex="-1" role="dialog" id="modalChangeDescription">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Change organization description</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form action="" id="formChangeDescription">
+                    <div class="form-group">
+                        <label for="newDescription">New description:</label>
+                        <textarea class="form-control" value="" id="newDescription" name="newDescription" rows="5"></textarea>
+                    </div>
+                </form> 
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default mr-auto" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="btnSaveDescription">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" tabindex="-1" role="dialog" id="modalConfirm">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title">Are you sure?</h5>
+            </div>
+            <div class="modal-body">
+                <p id="ConfirmMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default mr-auto" id="btnNo">No</button>
+                <button type="button" class="btn btn-danger" id="btnYes">Yes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script src="~/lib/web3/dist/web3.js" asp-append-version="true"></script>
+    <script src="~/js/token.js" asp-append-version="true"></script>
+}

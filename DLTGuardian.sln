@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27428.2043
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DLTGuardian", "DLTGuardian\DLTGuardian.csproj", "{FA609E23-5626-4A8D-9D5C-241F492A7809}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FA609E23-5626-4A8D-9D5C-241F492A7809}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA609E23-5626-4A8D-9D5C-241F492A7809}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA609E23-5626-4A8D-9D5C-241F492A7809}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA609E23-5626-4A8D-9D5C-241F492A7809}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A08DA43A-DC7D-458D-87FA-97B24F9E2677}
+	EndGlobalSection
+EndGlobal

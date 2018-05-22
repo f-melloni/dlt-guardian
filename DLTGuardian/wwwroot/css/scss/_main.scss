@@ -1,0 +1,12 @@
+﻿main {
+    > header {
+        background: #111;
+        margin-bottom: 2rem;
+        .navbar-brand {
+            background: url(../../images/logo.png) center center no-repeat;
+            display: inline-block;
+            width: 329px;
+            height: 71px;
+        }
+    }
+}

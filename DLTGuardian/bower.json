@@ -1,0 +1,29 @@
+{
+  "name": "DLTGuardian",
+  "authors": [
+    "martin <martin.novak@futuresolutionservices.com>"
+  ],
+  "description": "Smart contract frontend",
+  "main": "",
+  "license": "MIT",
+  "homepage": "",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "wwwroot/lib",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bootstrap": "v4.1.1",
+    "jquery-validation": ">=1.8",
+    "jquery-validation-unobtrusive": "3.2.6",
+    "Font-Awesome": "5.0.12",
+    "web3": "v0.20.6"
+  },
+  "resolutions": {
+    "bootstrap": "v4.1.1"
+  }
+}

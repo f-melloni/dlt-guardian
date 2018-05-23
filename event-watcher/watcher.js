@@ -30,11 +30,11 @@ var watcher = {
             }
         } : {});
 
-        provider.on('notifcation', () => { console.log('ws notified'); });
-        provider.on('connect', () => { console.log('ws connected'); });
-        provider.on('error', (e) => { console.log('ws error ', e); });
-        provider.on('end', (e) => { console.log('ws disconnected ', e); });
-        provider.on('data', () => { console.log('ws received data'); });
+        provider.on('notifcation', () => { /* console.log('ws notified'); */ });
+        provider.on('connect', () => { /* console.log('ws connected'); */ });
+        provider.on('error', (e) => { /* console.log('ws error ', e); */ });
+        provider.on('end', (e) => { /* console.log('ws disconnected ', e); */ });
+        provider.on('data', () => { /* console.log('ws received data'); */ });
 
         web3 = new Web3(provider);
 
@@ -62,7 +62,7 @@ var watcher = {
 
     // EVENTS
     _onEvent: function(e, r) {
-        console.log('--- EVENT SEEN ---');
+        // console.log('--- EVENT SEEN ---');
 
         if (r) {
             switch (r.event) {

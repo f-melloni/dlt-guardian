@@ -386,7 +386,8 @@ var SC = {
         member: $('#memberPanel'),
         owner: $('#ownerPanel'),
         canceled: $('#canceledMembershipPanel'),
-        list: $('#memberListPabel')
+        list: $('#memberListPanel'),
+        noConnection: $('#noConnection')
     },
 
     modalChangeWebsite: $('#modalChangeWebsite'),
@@ -477,10 +478,28 @@ var SC = {
 
     watchForAccountChange: function () {
         var accountInterval = setInterval(_(function () {
-            if (this.defaultAddress && web3.eth.accounts[0] !== this.defaultAddress) {
-                this.getAccount();
+            if (this.defaultAddress) {
+                if (web3.eth.accounts.length && web3.eth.accounts[0] !== this.defaultAddress) {
+                    this.getAccount();
+                }
+                else if (!web3.eth.accounts.length && this.defaultAddress != -1) {
+                    if (this.isOwner) {
+                        this.memberListTable.find('thead tr th').eq(3).remove().end().eq(2).remove();
+                        this.memberListTable.find('tbody tr').each(function () {
+                            $(this).find('td').eq(3).remove().end().eq(2).remove();
+                        });
+                    }
+
+                    this.isOwner = false;
+                    this.panels.owner.addClass('d-none');
+                    this.panels.member.addClass('d-none');
+                    this.panels.notMember.addClass('d-none');
+                    this.panels.canceled.addClass('d-none');
+                    this.metaMaskNotLoggedInfo();
+                }
             }
-        }, this), 100);
+            
+        }, this), 250);
     },
 
     subscribeEvents: function () {
@@ -491,6 +510,11 @@ var SC = {
         this.instance.ReactivateOrganisation(_(this._onReactivateOrganisation, this));
     },
 
+    metaMaskNotLoggedInfo: function () {
+        this.defaultAddress = -1;
+        this.panels.list.find('.card-body').prepend(this.makeMessage('info', '', 'Zdá se, že používáte MetaMask, ale nejste přihlášeni. Pro všechny funkce se prosím přihlaste.', 'info-circle', true));
+    },
+
     /*************************************************************/
     /* ACCOUNT METHODS                                           */
     /*************************************************************/
@@ -499,8 +523,23 @@ var SC = {
     },
 
     setAccount: function (e, r) {
-        this.defaultAddress = r[0];
-        this.checkOwner();
+ 
+        if (r) {
+            if (r.length) {
+                this.defaultAddress = r[0];
+                this.checkOwner();
+            }
+            else {
+                this.metaMaskNotLoggedInfo();
+                this.getMembers();
+            }
+        }
+        else {
+            this.getMembers();
+            this.panels.noConnection
+                .removeClass('d-none')
+                .prepend(this.makeMessage('warning', '', 'Ve vašem prohlížeči není dostupný ani MetaMask, ani lokální Ethereový nód.', 'exclamation-triangle'));
+        }
     },
 
     checkOwner: function () {
@@ -516,12 +555,13 @@ var SC = {
     },
 
     checkMember: function () {
-        this.instance.members(this.defaultAddress, _(this.setMember, this));
+        if (this.defaultAddress) {
+            this.instance.members(this.defaultAddress, _(this.setMember, this));
+        }
     },
 
     setMember: function (e, r) {
         if (r != null) {
-            console.log(r);
 
             this.panels.member.toggleClass('d-none', r[3] !== true || r[4] !== true);
             this.panels.notMember.toggleClass('d-none', r[3] === true || this.isOwner);
@@ -643,10 +683,10 @@ var SC = {
     },
 
     setMemberList: function (data) {
-        console.log(data);
+        //console.log(data);
 
         var body = this.memberListTable.find('tbody');
-        if (this.isOwner) {
+        if (this.isOwner && this.memberListTable.find('thead tr th').length == 2) {
             this.memberListTable.find('thead tr').append('<th width="34.4"></th><th width="80">Actions</th>');
         }
 
@@ -941,7 +981,7 @@ var SC = {
     },
 
     _onFeeChanged: function (e, r) {
-        console.log(e);
+        //console.log(e);
         if (e) {
             this.panels.owner.find('.card-body').prepend(this.makeMessage('danger', '', 'An unexpected error occured while changing entry fee. Please try again later.', 'exclamation-circle', true));
         }

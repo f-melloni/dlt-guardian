@@ -1,6 +1,7 @@
 var Web3 = require('web3');
 var util = require('util');
 var request = require('request');
+var fs = require('fs');
 var web3;
 
 var watcher = {
@@ -14,6 +15,10 @@ var watcher = {
 
     init: function() {
         this.config = require('./config.json');
+
+        if (fs.existsSync('./lastSeenBlock')) {
+            this.firstBlock = parseInt(fs.readFileSync('./lastSeenBlock')) + 1;
+        }
 
         var env = process.env.ENVIRONMENT === 'production' ? 'prod' : 'dev';
         this.env = env;
@@ -62,9 +67,10 @@ var watcher = {
 
     // EVENTS
     _onEvent: function(e, r) {
-        // console.log('--- EVENT SEEN ---');
-
         if (r) {
+            this.firstBlock = r.blockNumber;
+            fs.writeFileSync('./lastSeenBlock', this.firstBlock.toString(), { 'encoding': 'utf8' });
+
             switch (r.event) {
                 case 'CreateOrganisation':
                     this._onCreateOrganisation(r);
